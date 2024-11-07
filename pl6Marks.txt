@@ -1,0 +1,62 @@
+create database Pract_6;
+USE Pract_6;
+
+CREATE TABLE Stud_Marks (
+    Roll INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100),
+    total_marks INT
+);
+
+CREATE TABLE Result (
+    Roll INT,
+    Name VARCHAR(100),
+    Class VARCHAR(50),
+    FOREIGN KEY (Roll) REFERENCES Stud_Marks(Roll)
+);
+
+INSERT INTO Stud_marks(name, total_marks) VALUES ('Arjun Singh', 980);
+INSERT INTO Stud_marks(name, total_marks) VALUES ('Bharat Chopra', 1020);
+INSERT INTO Stud_marks(name, total_marks) VALUES ('Varun Shrivastav', 852);
+
+delimiter $
+
+create procedure proc_Grade()
+begin
+declare v_roll int;
+declare v_name varchar(100);
+declare v_total int;
+declare v_class varchar(50);
+declare v_count int;
+declare v_done int;
+
+declare stud_cursor cursor for
+select Roll,Name,total_marks
+From Stud_marks;
+
+declare exit handler for sqlexception select 'An error occured';
+declare continue handler for not found set v_done=TRUE;
+
+Open stud_cursor;
+grade_loop: LOOP
+Fetch stud_cursor into v_roll,v_name,v_total;
+
+IF v_done THEN
+    LEAVE grade_loop;
+END IF;
+
+IF v_total between 990 and 1500 then
+    set v_class = 'Distinction';
+ELSEIF v_total between 900 and 989 then
+    set v_class = 'First Class';
+ELSEIF v_total between 825 and 899 then
+    set v_class = 'Higher Second Class';
+ELSE
+    set v_class = 'No Grade';
+End IF;
+
+Insert into Result
+Values(v_roll,v_name,v_class);
+End LOOP;
+
+Close stud_cursor;
+End;
